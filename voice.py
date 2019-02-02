@@ -403,8 +403,15 @@ class DataSetBuilder(CommandLineParser):
         elif source in self.named_buffers:
             samples = self._clone_buffer(self.named_buffers[source])
         else:
-            samples = glob.glob(source)
-            samples = [Sample(WavFile(filename=s), '') for s in samples]
+            samples = []
+            for s in glob.glob(source):
+                transcript = ''
+                transcript_file_prefix, _ = os.path.splitext(s)
+                transcript_file_path = transcript_file_prefix + '.lab'
+                if os.path.isfile(transcript_file_path):
+                    with open(transcript_file_path) as transcript_file:
+                        transcript = transcript_file.read().strip()
+                samples.append(Sample(WavFile(filename=s), transcript=transcript))
         if len(samples) == 0:
             raise Error('No samples found!')
         return samples
